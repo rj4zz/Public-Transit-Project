@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-FleetMonitorApplication<fleet-monitor>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.transitmonitor.fleet.fleet_monitor.FleetMonitorApplication",
+            "projectName": "fleet-monitor",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}
