@@ -6,6 +6,7 @@ import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.net.http.HttpClient.Version;
 import java.net.http.HttpResponse.BodyHandlers;
 
 import org.springframework.scheduling.annotation.Scheduled;
@@ -17,13 +18,16 @@ public class GtfsRealtimeService {
     private static final String GTFS_RT_FEED_URL = "http://data.itsfactory.fi/journeys/api/1/gtfs-rt/vehicle-positions";
     private final HttpClient httpClient;
     public GtfsRealtimeService() {
-        this.httpClient = HttpClient.newHttpClient();
+        this.httpClient = HttpClient.newBuilder().version(Version.HTTP_1_1).build();
     }
 
     @Scheduled(fixedRate = 30000)
     public void fetchGtfsRealtimeData() {
         try {
-            HttpRequest request = HttpRequest.newBuilder(new URI(GTFS_RT_FEED_URL)).GET().build();
+            HttpRequest request = HttpRequest.newBuilder(new URI(GTFS_RT_FEED_URL))
+                                             .header("User-Agent", "Fleet Monitor Project")
+                                             .GET()
+                                             .build();
 
             HttpResponse<byte[]> response = httpClient.send(request, BodyHandlers.ofByteArray());
 
