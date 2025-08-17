@@ -4,13 +4,16 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;
+import java.net.http.HttpClient.Version;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.net.http.HttpClient.Version;
 import java.net.http.HttpResponse.BodyHandlers;
 
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+
+import com.google.transit.realtime.GtfsRealtime.FeedEntity;
+import com.google.transit.realtime.GtfsRealtime.FeedMessage;
 
 @Service
 public class GtfsRealtimeService {
@@ -33,7 +36,20 @@ public class GtfsRealtimeService {
 
             if (response.statusCode() == 200) {
                 byte[] rawData = response.body();
-                System.out.println("Fetched Data Size: " + rawData.length + " bytes.");
+
+                //System.out.println("Fetched Data Size: " + rawData.length + " bytes.");
+
+                FeedMessage feed = FeedMessage.parseFrom(rawData);
+                int activeVehicles = 0;
+
+                for (FeedEntity entity : feed.getEntityList()) {
+                    if (entity.hasVehicle()) {
+                        activeVehicles += 1;
+                    }
+                }
+
+                System.out.println("Successfully parsed feed. Found " + activeVehicles + " vehicles.");
+
             } else {
                 System.err.println("Failed to fetch data. Status Code: " + response.statusCode());
             }
@@ -45,6 +61,6 @@ public class GtfsRealtimeService {
             System.err.println("Operation is interrupted: " + e.getMessage());
 
             Thread.currentThread().interrupt();
-        }
+        }     
     }
 }
