@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import com.google.transit.realtime.GtfsRealtime.FeedEntity;
 import com.google.transit.realtime.GtfsRealtime.FeedMessage;
+import com.google.transit.realtime.GtfsRealtime.VehiclePosition;
 
 @Service
 public class GtfsRealtimeService {
@@ -40,15 +41,17 @@ public class GtfsRealtimeService {
                 //System.out.println("Fetched Data Size: " + rawData.length + " bytes.");
 
                 FeedMessage feed = FeedMessage.parseFrom(rawData);
-                int activeVehicles = 0;
+                //int activeVehicles = 0;
 
                 for (FeedEntity entity : feed.getEntityList()) {
                     if (entity.hasVehicle()) {
-                        activeVehicles += 1;
+                        VehiclePosition vehicle = entity.getVehicle();
+                        System.out.println(vehicle.getAllFields());
+                        break;
                     }
                 }
 
-                System.out.println("Successfully parsed feed. Found " + activeVehicles + " vehicles.");
+                //System.out.println("Successfully parsed feed. Found " + activeVehicles + " vehicles.");
 
             } else {
                 System.err.println("Failed to fetch data. Status Code: " + response.statusCode());
