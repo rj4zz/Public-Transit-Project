@@ -1,5 +1,6 @@
 package com.transitmonitor.fleet.fleet_monitor.entity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -10,8 +11,13 @@ public class VehiclePositionEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(name="vehicle_id")
     private String vehicleId;
+
+    @Column(name = "route_id")
     private String routeId;
+
     private float latitude;
     private float longitude;
     private long timestamp;
