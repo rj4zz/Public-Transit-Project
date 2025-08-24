@@ -9,6 +9,8 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -20,6 +22,7 @@ import com.transitmonitor.fleet.fleet_monitor.repository.VehiclePositionReposito
 
 @Service
 public class GtfsRealtimeService {
+    private static final Logger logger = LoggerFactory.getLogger(GtfsRealtimeService.class);
     //TODO: Refactor w/ @Value based external configuration later on
     private static final String GTFS_RT_FEED_URL = "http://data.itsfactory.fi/journeys/api/1/gtfs-rt/vehicle-positions";
     private final HttpClient httpClient;
@@ -64,6 +67,7 @@ public class GtfsRealtimeService {
                         vehiclePositionEntity.setLongitude(vehicle.getPosition().getLongitude());
                         vehiclePositionEntity.setTimestamp(vehicle.getTimestamp());
                         vehiclePositionRepository.save(vehiclePositionEntity);
+                        logger.info("Saved vehicle position with ID: {}", vehiclePositionEntity.getVehicleId());
 
                     }
                 }
