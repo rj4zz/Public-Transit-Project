@@ -15,14 +15,20 @@ import org.springframework.stereotype.Service;
 import com.google.transit.realtime.GtfsRealtime.FeedEntity;
 import com.google.transit.realtime.GtfsRealtime.FeedMessage;
 import com.google.transit.realtime.GtfsRealtime.VehiclePosition;
+import com.transitmonitor.fleet.fleet_monitor.entity.VehiclePositionEntity;
+import com.transitmonitor.fleet.fleet_monitor.repository.VehiclePositionRepository;
 
 @Service
 public class GtfsRealtimeService {
     //TODO: Refactor w/ @Value based external configuration later on
     private static final String GTFS_RT_FEED_URL = "http://data.itsfactory.fi/journeys/api/1/gtfs-rt/vehicle-positions";
     private final HttpClient httpClient;
-    public GtfsRealtimeService() {
+    private final VehiclePositionRepository vehiclePositionRepository;
+
+    //Constructor
+    public GtfsRealtimeService(VehiclePositionRepository vehiclePositionRepository) {
         this.httpClient = HttpClient.newBuilder().version(Version.HTTP_1_1).build();
+        this.vehiclePositionRepository = vehiclePositionRepository;
     }
 
     @Scheduled(fixedRate = 30000)
@@ -35,24 +41,32 @@ public class GtfsRealtimeService {
 
             HttpResponse<byte[]> response = httpClient.send(request, BodyHandlers.ofByteArray());
 
+
             if (response.statusCode() == 200) {
+
                 byte[] rawData = response.body();
 
-                //System.out.println("Fetched Data Size: " + rawData.length + " bytes.");
-
                 FeedMessage feed = FeedMessage.parseFrom(rawData);
-                //int activeVehicles = 0;
 
                 for (FeedEntity entity : feed.getEntityList()) {
+
                     if (entity.hasVehicle()) {
+                        //Get the Realtime positioning information for the vehicle.
                         VehiclePosition vehicle = entity.getVehicle();
-                        System.out.println(vehicle.getAllFields());
-                        break;
+
+                        //Initiate a new Row
+                        VehiclePositionEntity vehiclePositionEntity = new VehiclePositionEntity();
+                        
+                        //Populate the Row values
+                        vehiclePositionEntity.setVehicleId(vehicle.getVehicle().getId());
+                        vehiclePositionEntity.setRouteId(vehicle.getTrip().getRouteId());
+                        vehiclePositionEntity.setLatitude(vehicle.getPosition().getLatitude());
+                        vehiclePositionEntity.setLongitude(vehicle.getPosition().getLongitude());
+                        vehiclePositionEntity.setTimestamp(vehicle.getTimestamp());
+                        vehiclePositionRepository.save(vehiclePositionEntity);
+
                     }
                 }
-
-                //System.out.println("Successfully parsed feed. Found " + activeVehicles + " vehicles.");
-
             } else {
                 System.err.println("Failed to fetch data. Status Code: " + response.statusCode());
             }
