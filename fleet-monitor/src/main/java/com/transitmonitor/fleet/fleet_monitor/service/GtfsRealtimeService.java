@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.google.transit.realtime.GtfsRealtime.FeedEntity;
 import com.google.transit.realtime.GtfsRealtime.FeedMessage;
@@ -35,6 +36,7 @@ public class GtfsRealtimeService {
     }
 
     @Scheduled(fixedRate = 30000)
+    @Transactional(rollbackFor = Exception.class)
     public void fetchGtfsRealtimeData() {
         try {
             HttpRequest request = HttpRequest.newBuilder(new URI(GTFS_RT_FEED_URL))
