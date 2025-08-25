@@ -8,6 +8,8 @@ import java.net.http.HttpClient.Version;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
+import java.time.Duration;
+import java.time.Instant;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,6 +30,8 @@ public class GtfsRealtimeService {
     private static final String GTFS_RT_FEED_URL = "http://data.itsfactory.fi/journeys/api/1/gtfs-rt/vehicle-positions";
     private final HttpClient httpClient;
     private final VehiclePositionRepository vehiclePositionRepository;
+    //Staleness Limit
+    private static final Duration STALENESS_THRESHOLD = Duration.ofMinutes(5);
 
     //Constructor
     public GtfsRealtimeService(VehiclePositionRepository vehiclePositionRepository) {
@@ -53,6 +57,9 @@ public class GtfsRealtimeService {
 
                 FeedMessage feed = FeedMessage.parseFrom(rawData);
 
+                //Fetch the current timestamp
+                Instant currentTimeInSeconds = Instant.now();
+
                 for (FeedEntity entity : feed.getEntityList()) {
 
                     if (entity.hasVehicle()) {
@@ -62,14 +69,22 @@ public class GtfsRealtimeService {
                         //Initiate a new Row
                         VehiclePositionEntity vehiclePositionEntity = new VehiclePositionEntity();
                         
-                        //Populate the Row values
-                        vehiclePositionEntity.setVehicleId(vehicle.getVehicle().getId());
-                        vehiclePositionEntity.setRouteId(vehicle.getTrip().getRouteId());
-                        vehiclePositionEntity.setLatitude(vehicle.getPosition().getLatitude());
-                        vehiclePositionEntity.setLongitude(vehicle.getPosition().getLongitude());
-                        vehiclePositionEntity.setTimestamp(vehicle.getTimestamp());
-                        vehiclePositionRepository.save(vehiclePositionEntity);
-                        logger.info("Saved vehicle position with ID: {}", vehiclePositionEntity.getVehicleId());
+                        Instant vehiclePositionTimestamp = Instant.ofEpochSecond(vehicle.getTimestamp());
+                        Duration age = Duration.between(vehiclePositionTimestamp, currentTimeInSeconds);
+                        if (age.compareTo(STALENESS_THRESHOLD) > 0) {
+                            //Stale
+                            logger.warn("Vehicle ID {} has stale data by {} seconds", vehicle.getVehicle().getId(), age.toSeconds());
+
+                        } else {
+                            //Populate the Row values
+                            vehiclePositionEntity.setVehicleId(vehicle.getVehicle().getId());
+                            vehiclePositionEntity.setRouteId(vehicle.getTrip().getRouteId());
+                            vehiclePositionEntity.setLatitude(vehicle.getPosition().getLatitude());
+                            vehiclePositionEntity.setLongitude(vehicle.getPosition().getLongitude());
+                            vehiclePositionEntity.setTimestamp(vehicle.getTimestamp());
+                            vehiclePositionRepository.save(vehiclePositionEntity);
+                            logger.info("Saved vehicle position with ID: {}", vehiclePositionEntity.getVehicleId());
+                        }
 
                     }
                 }
