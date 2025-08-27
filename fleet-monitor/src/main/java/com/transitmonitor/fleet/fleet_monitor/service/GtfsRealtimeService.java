@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;
-import java.net.http.HttpClient.Version;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
@@ -27,7 +26,7 @@ import com.transitmonitor.fleet.fleet_monitor.repository.VehiclePositionReposito
 public class GtfsRealtimeService {
     private static final Logger logger = LoggerFactory.getLogger(GtfsRealtimeService.class);
     //TODO: Refactor w/ @Value based external configuration later on
-    private static final String GTFS_RT_FEED_URL = "http://data.itsfactory.fi/journeys/api/1/gtfs-rt/vehicle-positions";
+    private static final String GTFS_RT_FEED_URL = "https://www.rtd-denver.com/files/gtfs-rt/VehiclePosition.pb";
     private final HttpClient httpClient;
     private final VehiclePositionRepository vehiclePositionRepository;
     //Staleness Limit
@@ -35,7 +34,7 @@ public class GtfsRealtimeService {
 
     //Constructor
     public GtfsRealtimeService(VehiclePositionRepository vehiclePositionRepository) {
-        this.httpClient = HttpClient.newBuilder().version(Version.HTTP_1_1).build();
+        this.httpClient = HttpClient.newBuilder().followRedirects(HttpClient.Redirect.ALWAYS).build();
         this.vehiclePositionRepository = vehiclePositionRepository;
     }
 
