@@ -4,7 +4,11 @@ import java.time.Instant;
 
 import org.springframework.data.annotation.Id;
 
+import com.transitmonitor.fleet.fleet_monitor.model.AnomalyType;
+
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 
@@ -14,8 +18,10 @@ public class AnomalyEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String vehicleId;
+
     //"STALLED_VEHICLE", "VEHICLE_BUNCHING"
-    private String anomalyType;
+    @Enumerated(EnumType.STRING)
+    private AnomalyType anomalyType;
     //UNIX Timestamp of when the anomaly was found
     private Instant detectionTimestamp;
 
@@ -30,11 +36,11 @@ public class AnomalyEntity {
         this.vehicleId = vehicleId;
     }
 
-    public String getAnomalyType() {
+    public AnomalyType getAnomalyType() {
         return anomalyType;
     }
 
-    public void setAnomalyType(String anomalyType) {
+    public void setAnomalyType(AnomalyType anomalyType) {
         this.anomalyType = anomalyType;
     }
 
