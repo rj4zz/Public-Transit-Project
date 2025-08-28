@@ -16,7 +16,7 @@ public interface VehiclePositionRepository extends JpaRepository<VehiclePosition
     }
     
 
-    @Query("SELECT vp.vehicleId, MAX(vp.timestamp) " +
+    @Query("SELECT vp.vehicleId as vehicleId, MAX(vp.timestamp) AS latestTimestamp " +
            "FROM VehiclePositionEntity vp " +
            "GROUP BY vp.vehicleId " +
            "HAVING MAX(vp.timestamp) < :timestampThreshold")
