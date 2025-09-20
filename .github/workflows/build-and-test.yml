@@ -18,5 +18,6 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
       - name: Build and test with Maven
+        working-directory: fleet-monitor
         run: mvn -B clean install
         
