@@ -20,4 +20,6 @@ jobs:
       - name: Build and test with Maven
         working-directory: fleet-monitor
         run: mvn -B clean install
+        env:
+          LOGGING_LEVEL_COM_TRANSITMONITOR_FLEET_FLEET_MONITOR: ERROR
         
